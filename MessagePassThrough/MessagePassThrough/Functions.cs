@@ -33,5 +33,21 @@ namespace MessagePassThrough
 
             await outputQueue.AddAsync(messageOut);
         }
+
+        public static async Task ProcessQueue2Message(
+            [ServiceBusTrigger("amqp-poc-inbound-q4", AccessRights.Listen)] BrokeredMessage messageIn,
+            [ServiceBus("amqp-poc-outbound-q4", AccessRights.Send)] IAsyncCollector<BrokeredMessage> outputQueue, 
+            TextWriter log)
+        {
+            log.WriteLine(messageIn);
+
+            var stream = messageIn.GetBody<Stream>();
+
+            var outMessage = new BrokeredMessage(stream);
+
+            outMessage.Properties.Add("Echoed", "From-WebJob");
+
+            await outputQueue.AddAsync(outMessage);
+        }
     }
 }

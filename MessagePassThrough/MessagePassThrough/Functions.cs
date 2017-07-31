@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -41,12 +42,14 @@ namespace MessagePassThrough
         {
             log.WriteLine(messageIn);
 
+            var received = DateTime.UtcNow;
             var stream = messageIn.GetBody<Stream>();
 
             var outMessage = new BrokeredMessage(stream);
 
             outMessage.Properties.Add("Echoed", "From-WebJob");
-
+            outMessage.Properties.Add("Received-From-PI", received.ToString(CultureInfo.GetCultureInfo("en-AU")));
+            outMessage.Properties.Add("Sent-From-Azure", DateTime.UtcNow.ToString(CultureInfo.GetCultureInfo("en-AU")));
             await outputQueue.AddAsync(outMessage);
         }
     }
